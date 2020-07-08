@@ -4,6 +4,13 @@ import {loadLevel} from './Loader.js';
 import {createMario} from './Entities.js';
 import {loadBackgroundSprites} from './Sprites.js';
 import {createBackgroundLayer, createSpriteLayer} from './Layer.js'; 
+import Keyboard from './KeyboardState.js';
+
+// cek event pada keyboard
+// window.addEventListener('keydown', event => {
+//     event.preventDefault();
+//     console.log(event);
+// });
 
 const canvas = document.getElementById('screen'); // ambil element canvas dengan id
 const context = canvas.getContext('2d'); // API yang gunakan untuk menggambar di kanvas.
@@ -21,22 +28,36 @@ Promise.all([
     const backgroundLayer = createBackgroundLayer(level.backgrounds, backgroundSprites);
     comp.layers.push(backgroundLayer);
 
-    const gravity = 30;
-    mario.pos.set(64, 180);
-    mario.vel.set(200, -600);
+    const gravity = 2000; // gravitasi
+    mario.pos.set(64, 180); // posisi karakter
+    //mario.vel.set(200, -600); // kecepatan / percepatan
 
     // const pos = new Vec2(64, 180);
     // const vel = new Vec2(2, -10);
+    const SPACE = 32;
+    const input = new Keyboard();
+    input.addMapping(SPACE, keyState => {
+        if (keyState) {
+            mario.jump.start();
+        }else{
+            mario.jump.cancel();
+        }
+        console.log(keyState);
+    });
+    input.listenTo(window);
 
     const spriteLayer = createSpriteLayer(mario);
     comp.layers.push(spriteLayer);
 
-    const timer =  new Timer(1/60);
+    const timer =  new Timer(1/60); // set waktu perframe
     timer.update = function update(deltaTime) {
-        comp.draw(context);
+        
         mario.update(deltaTime);
         // console.log(mario.pos);
-        mario.vel.y += gravity;
+
+        comp.draw(context);
+
+        mario.vel.y += gravity * deltaTime;
         
     }
     timer.start();
